@@ -31,7 +31,47 @@ def turns(reversed_list):
     global final_movement_list
 
     
-    for node in range(len(reversed_list)-1):
+    for node in range(len(reversed_list)-1):    
+        m = 0
+        if reversed_list[node][1] < reversed_list[node + 1][1]: m += 1
+        if angle == 90: m += 10
+        if angle == 180: m += 20
+        if angle == 270: m += 40
+        
+        match m:
+            case 0:
+                angle = 270
+                turn.append(angle)
+                final_movement_list.append("left")
+            case 1:
+                angle = 90
+                turn.append(angle)
+                final_movement_list.append("right")
+            case 10:
+                angle = 0
+                turn.append(angle)
+                final_movement_list.append("left")
+            case 11:
+                angle = 180
+                turn.append(angle)
+                final_movement_list.append("right")
+            case 20 | 21:
+                angle = 90
+                turn.append(angle)
+                final_movement_list.append("left")
+            case 40:
+                angle = 0
+                turn.append(angle)
+                final_movement_list.append("right")
+            case 41:
+                angle = 0
+                turn.append(angle)
+                final_movement_list.append("left")
+            case _:
+                final_movement_list.append("forward")
+        final_movement_list.append("forward")
+        
+        """
         if angle == 0 and reversed_list[node][1] > reversed_list[node + 1][1]:  # angle 0, y value decreases, turn left
             angle = 270
             turn.append(angle)
@@ -83,7 +123,7 @@ def turns(reversed_list):
         else:
             # turn.append("forward")
             final_movement_list.append("forward")
-    """
+    
     for node in range(len(reversed_list) - 1):
         x_diff = reversed_list[node][0] - reversed_list[node + 1][0]
         y_diff = reversed_list[node][1] - reversed_list[node + 1][1]
