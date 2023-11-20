@@ -1,15 +1,13 @@
 import math
-import time
 import FA
-import serial as serial
 
 fa = FA.Create()
 fa.ComOpen(3)  # Check your computer's bluetooth settings to get the correct port for this value.
 
 
 angle = 0  # Starting angle always defined as "0" degrees.
-turn = []  # a placeholder for turn commands.
-movement_list = [] # List of movement commands before parsing for forward movement lengths. 
+#turn = []  # a placeholder for turn commands.
+#movement_list = [] # List of movement commands before parsing for forward movement lengths. 
 final_movement_list = []  # The final list of movement commands the robot executes, a list of strings.
 
 
@@ -32,6 +30,7 @@ def turns(reversed_list):
     global movement_list
     print(reversed_list)
     
+    y = 0
     for node in range(len(reversed_list)-1):    
         m = 0
         if reversed_list[node][0] < reversed_list[node + 1][0]: m += 1 # x increase
@@ -42,57 +41,41 @@ def turns(reversed_list):
         if angle == 180: m += 20
         if angle == 270: m += 30
         
+        """Caselist, m values outside of this list are errors
+        2: angle 0, y value decreases, turn left
+        3: angle 0, y value increases, turn right
+        10: angle 90, x value decreases, turn left
+        11: angle 90, x value increases, turn right
+        22: angle 180, y value decreases, turn right
+        23: angle 180, y value increases, turn left
+        30: angle 270, x value decreases, turn right
+        31: angle 270, x value increases, turn left
+        """
+        final_movement_list.append(0)
         match m:
-            case 2: # angle 0, y value decreases, turn left
-                angle = 270
-                turn.append(angle)
-                movement_list.append("left")
-            case 3: # angle 0, y value increases, turn right
-                angle = 90
-                turn.append(angle)
-                movement_list.append("right")
-            case 10: # angle 90, x value decreases, turn left
-                angle = 0
-                turn.append(angle)
-                movement_list.append("left")
-            case 11: # angle 90, x value increases, turn right
-                angle = 180
-                turn.append(angle)
-                movement_list.append("right")
-            case 22: # angle 180, y value decreases, turn right
-                angle = 270
-                turn.append(angle)
-                movement_list.append("left")
-            case 23: # angle 180, y value increases, turn left
-                angle = 90
-                turn.append(angle)
-                movement_list.append("left")
-            case 30: # angle 270, x value decreases, turn right
-                angle = 0
-                turn.append(angle)
-                movement_list.append("right")
-            case 31: # angle 270, x value increases, turn left
-                angle = 180
-                turn.append(angle)
-                movement_list.append("left")
+            case 2 | 10 | 23 | 31:
+                final_movement_list.append(["left", 1])
+                y += 2
+            case 3 | 11 | 22 | 30:
+                final_movement_list.append(["right", 1])
+                y += 2
             case _:
-                movement_list.append("forward")
+                final_movement_list += 1
+        
+        match m:
+            case 2 | 22:
+                angle = 270
+            case 3 | 23:
+                angle = 90
+            case 10 | 30:
+                angle = 0
+            case 11 | 31:
+                angle = 180
+            case _:
+                print("Error, m = " + str(m))
     
-    turn.append(angle)
-    
-    y = 0
-    final_movement_list.append(0)
-    for x in range(len(movement_list)):
-        if movement_list[x] == "forward":
-            final_movement_list[y] += 1
-        else:
-            final_movement_list.extend([movement_list[x], 1])
-            y += 2
-    
-    #movement_list.extend(["left", "forward"])
-    print("Final angle: " + str(angle))
-    print("MOVEMENT SOLUTION: " + str(movement_list))
-    print("FINAL PATH LIST: " + str(final_movement_list))
+    print("FINAL ANGLE: " + str(angle))
+    print("MOVEMENT SOLUTION: " + str(final_movement_list))
 
 def navigate():
     for x in range(len(final_movement_list)):
