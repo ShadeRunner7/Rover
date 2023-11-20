@@ -59,7 +59,11 @@ def turns(reversed_list):
                 angle = 180
                 turn.append(angle)
                 movement_list.append("right")
-            case 22 | 23: # angle 180, y value changes, turn left
+            case 22: # angle 180, y value decreases, turn right
+                angle = 270
+                turn.append(angle)
+                movement_list.append("left")
+            case 23: # angle 180, y value increases, turn left
                 angle = 90
                 turn.append(angle)
                 movement_list.append("left")
