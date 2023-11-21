@@ -1,8 +1,9 @@
 import math
 import FA
 
-fa = FA.Create()
-fa.ComOpen(3)  # Check your computer's bluetooth settings to get the correct port for this value.
+def open_comms(port):
+    fa = FA.Create()
+    fa.ComOpen(port)  # Check your computer's bluetooth settings to get the correct port for this value.
 
 
 angle = 0  # Starting angle always defined as "0" degrees.
@@ -27,10 +28,11 @@ class Node:
 def turns(reversed_list):
     global turn
     global angle
-    global movement_list
+    global final_movement_list
     print(reversed_list)
     
     y = 0
+    final_movement_list.append(0)
     for node in range(len(reversed_list)-1):    
         m = 0
         if reversed_list[node][0] < reversed_list[node + 1][0]: m += 1 # x increase
@@ -51,16 +53,15 @@ def turns(reversed_list):
         30: angle 270, x value decreases, turn right
         31: angle 270, x value increases, turn left
         """
-        final_movement_list.append(0)
         match m:
             case 2 | 10 | 23 | 31:
-                final_movement_list.append(["left", 1])
+                final_movement_list.extend(["left", 1])
                 y += 2
             case 3 | 11 | 22 | 30:
-                final_movement_list.append(["right", 1])
+                final_movement_list.extend(["right", 1])
                 y += 2
             case _:
-                final_movement_list += 1
+                final_movement_list[y] += 1
         
         match m:
             case 2 | 22:
@@ -71,8 +72,6 @@ def turns(reversed_list):
                 angle = 0
             case 11 | 31:
                 angle = 180
-            case _:
-                print("Error, m = " + str(m))
     
     print("FINAL ANGLE: " + str(angle))
     print("MOVEMENT SOLUTION: " + str(final_movement_list))
@@ -184,7 +183,7 @@ def a_star(maze, start, end):
             # Add the child to the open list
             open_list.append(child)
 
-
+"""
 def main():
 
     maze = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -209,3 +208,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+"""
