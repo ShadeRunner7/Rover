@@ -9,7 +9,7 @@ from tkinter import ttk
 from sqlite3 import Error
 
 class GUI:    
-    def __init__(self, root, maze):
+    def __init__(self, root, maze, angle, dist):
         self.root = root
         root.title("Test GUI")
         s = ttk.Style()
@@ -34,13 +34,13 @@ class GUI:
         
         self.MAP_WIDTH = MAP_WIDTH = 11     
         
-        frame = ttk.Frame(root, padding="1 10 30 100") #padding="left, top, right, bottom"
+        frame = ttk.Frame(root, padding="30") #padding="left, top, right, bottom"
         frame.grid(column=0, row=0, sticky=(N, W, E, S))
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
         
         
-        mapframe = ttk.Frame(frame, padding=5)
+        mapframe = ttk.Frame(frame, padding=(5, 5, 5, 30))
         mapframe.grid(column=2, row=0, rowspan=1000)
         
         for x in range(MAP_WIDTH):
@@ -64,19 +64,49 @@ class GUI:
                 command=(lambda y=x: self.click_f(y))))
             self.map_buttons[x].grid(column=col, row=r, sticky='NWES')
             
-
-        ttk.Label(frame, text="Port Number").grid(column=0, row=0)
+        ROW = 0
+        ttk.Label(frame, text="Port Number").grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
         
-        Port_Number = ttk.Spinbox(frame, from_=0, to=10, width=2)
-        Port_Number.set(3) #Port default value
-        Port_Number.grid(column=0, row=1)
+        self.Port_Number = ttk.Spinbox(frame, from_=0, to=10, width=2)
+        self.Port_Number.set(3) #Port default value
+        self.Port_Number.grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
         
-        ttk.Button(frame, text="Start", command=lambda x=Port_Number.get(): self.run(x)).grid(column=0, row=2)
+        ttk.Label(frame).grid(column=0, row=ROW)
+        ROW += 1
         
-        ttk.Label(frame).grid(column=0, row=3)
+        ttk.Label(frame, text="Angle").grid(column=0, row=ROW)
+        ttk.Label(frame, text="Distance").grid(column=1, row=ROW)
+        ROW += 1
+        
+        self.Move_Angle = ttk.Spinbox(frame, from_=80, to=90, increment=.5, width=4)
+        self.Move_Angle.set(angle)
+        self.Move_Angle.grid(column=0, row=ROW)
+        
+        self.Dist = ttk.Spinbox(frame, from_=85, to=100, increment=.5, width=4)
+        self.Dist.set(dist)
+        self.Dist.grid(column=1, row=ROW)
+        ROW += 1
+        
+        ttk.Label(frame).grid(column=0, row=ROW)
+        ROW += 1
+        
+        ttk.Button(frame, text="Flip", command=self.flip).grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
+        
+        ttk.Label(frame).grid(column=0, row=ROW)
+        ROW += 1
+        
+        ttk.Button(frame, text="Start", command=(lambda: self.run())).grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
+        
+        ttk.Label(frame).grid(column=0, row=ROW)
+        ROW += 1
         
         Quit_Button = ttk.Button(frame, text="Quit", command=self.close)
-        Quit_Button.grid(column=0, row=4)
+        Quit_Button.grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
         
         Quit_Button.focus()
         #root.bind("<Return>")
@@ -133,10 +163,12 @@ class GUI:
         maze = ""
         for x in range(len(self.maze)):
             maze += self.maze[x]
-        SQL().save_maze(maze)
+        angle = self.Move_Angle.get()
+        dist = self.Dist.get()
+        SQL().save_maze(maze, angle, dist)
         self.root.destroy()
 
-    def run(self, num):
+    def run(self):
         start = ()
         end = ()
         maze = [['' for i in range(self.MAP_WIDTH)] for j in range(self.MAP_WIDTH)]
@@ -155,19 +187,39 @@ class GUI:
                     maze[x][y] = 0
                 else:
                     maze[x][y] = int(self.maze[x * self.MAP_WIDTH + y])
-        print(maze)
+        #print(maze)
         
         #print(start, end)
         
+        port = int(self.Port_Number.get())
+        angle = float(self.Move_Angle.get())
+        dist = float(self.Dist.get())
+        
         try:
-            open_comms(num)
+            open_comms(port)
             print("Connection successful")
         except:
             print("Is the rover on?")
-            print("Port number: ", num)
+            print("Port number: ", int(self.Port_Number.get()))
         
         path = a_star(maze, start, end)
-        navigate()
+        navigate(angle, dist)
+    
+    def flip(self):
+        flip = 0
+        for x in range(len(self.maze)):
+            if self.maze[x] == '2':
+                self.map_buttons[x]['style'] = 'goal.grid.TLabel'
+                self.maze[x] = '3'
+                x += 1
+                flip += 1
+            if self.maze[x] == '3':
+                self.map_buttons[x]['style'] = 'start.grid.TLabel'
+                self.maze[x] = '2'
+                flip += 1
+            if flip == 2:
+                break
+                
 
 
 class SQL:
@@ -177,37 +229,40 @@ class SQL:
     
     def get_maze(self):
         try:
-            self.cursor.execute('SELECT maze_string FROM maze LIMIT 1')
+            self.cursor.execute('SELECT * FROM maze LIMIT 1')
             maze_array = self.cursor.fetchall()
             
-            return maze_array[0][0]
+            return maze_array
             
         except Error as e:
             print(e)
         self.conn.close()
     
-    def save_maze(self, maze):
+    def save_maze(self, maze, angle, dist):
         try:
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS maze (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    maze_string TEXT
+                    maze_string TEXT,
+                    angle NUMERIC,
+                    distance NUMERIC                
                 )
             ''')
             self.conn.commit()
             self.cursor.execute('DELETE FROM maze')
             self.conn.commit()
             self.cursor.execute('''
-                    INSERT INTO maze (maze_string)
-                    VALUES (?)
-                ''', (maze,))
+                    INSERT INTO maze (maze_string, angle, distance)
+                    VALUES (?, ?, ?)
+                ''', (maze, angle, dist))
             self.conn.commit()
         except Error as e:
             print(e)
         
 
 def main():
-    saved_maze = SQL().get_maze()
+    saved_maze = SQL().get_maze()[0]
+    print(saved_maze)
     default_maze = ""
     default_maze_array = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                           [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -226,11 +281,16 @@ def main():
             default_maze += str(default_maze_array[x][y])
     if not saved_maze:
         maze = default_maze
+        angle = 86
+        dist = 87.5
     else:
-        maze = str(saved_maze)
+        maze = str(saved_maze[1])
+        angle = float(saved_maze[2])
+        dist = float(saved_maze[3])
+    
     
     root = Tk()
-    GUI(root, maze)
+    GUI(root, maze, angle, dist)
     root.mainloop()
 
 if __name__ == "__main__":

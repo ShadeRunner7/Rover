@@ -45,6 +45,7 @@ def turns(reversed_list):
         if angle == 180: m += 20
         if angle == 270: m += 30
         
+        print(node, " m: ", m)
         """Caselist, m values outside of this list are errors
         2: angle 0, y value decreases, turn left
         3: angle 0, y value increases, turn right
@@ -56,6 +57,9 @@ def turns(reversed_list):
         31: angle 270, x value increases, turn left
         """
         match m:
+            case 1:
+                final_movement_list.extend(["right", "right", 1])
+                y += 3
             case 2 | 10 | 23 | 31:
                 final_movement_list.extend(["left", 1])
                 y += 2
@@ -66,6 +70,8 @@ def turns(reversed_list):
                 final_movement_list[y] += 1
         
         match m:
+            case 1:
+                angle = 180
             case 2 | 22:
                 angle = 270
             case 3 | 23:
@@ -74,6 +80,7 @@ def turns(reversed_list):
                 angle = 0
             case 11 | 31:
                 angle = 180
+        
     match angle:
         case 90:
             final_movement_list.append("left")
@@ -88,16 +95,17 @@ def turns(reversed_list):
     print("FINAL ANGLE: " + str(angle))
     print("MOVEMENT SOLUTION: " + str(final_movement_list))
 
-def navigate():
+def navigate(angle, dist):
+    #print(type(angle), angle, type(dist), dist)
     for x in range(len(final_movement_list)):
         print("Doing...")
         match final_movement_list[x]:
             case "left":
-                fa.Left(86)
+                fa.Left(angle)
             case "right":
-                fa.Right(86)
+                fa.Right(angle)
             case _:
-                fa.Forwards(87.8 * final_movement_list[x])
+                fa.Forwards(dist * final_movement_list[x])
     
     fa.SetMotors(0, 0)
     fa.ComClose()
