@@ -262,7 +262,7 @@ class SQL:
 
 def main():
     saved_maze = SQL().get_maze()[0]
-    print(saved_maze)
+    #print(saved_maze)
     default_maze = ""
     default_maze_array = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                           [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
