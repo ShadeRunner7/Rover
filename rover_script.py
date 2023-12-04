@@ -2,6 +2,7 @@ import math
 import FA
 
 def open_comms(port):
+    global fa
     fa = FA.Create()
     fa.ComOpen(port)  # Check your computer's bluetooth settings to get the correct port for this value.
 
@@ -29,6 +30,7 @@ def turns(reversed_list):
     global turn
     global angle
     global final_movement_list
+    final_movement_list = []
     print(reversed_list)
     
     y = 0
@@ -72,12 +74,23 @@ def turns(reversed_list):
                 angle = 0
             case 11 | 31:
                 angle = 180
+    match angle:
+        case 90:
+            final_movement_list.append("left")
+            angle = 0
+        case 180:
+            final_movement_list.extend(["right", "right"])
+            angle = 0
+        case 270:
+            final_movement_list.append("right")
+            angle = 0
     
     print("FINAL ANGLE: " + str(angle))
     print("MOVEMENT SOLUTION: " + str(final_movement_list))
 
 def navigate():
     for x in range(len(final_movement_list)):
+        print("Doing...")
         match final_movement_list[x]:
             case "left":
                 fa.Left(86)
@@ -88,10 +101,13 @@ def navigate():
     
     fa.SetMotors(0, 0)
     fa.ComClose()
+    print("Finished")
 
 
 def a_star(maze, start, end):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+
+    print(maze, start, end)
 
     # Create start and end node
     start_node = Node(None, start)
