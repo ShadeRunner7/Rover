@@ -1,15 +1,14 @@
 import math
+import time
 import FA
+import serial as serial
 
-def open_comms(port):
-    global fa
-    fa = FA.Create()
-    fa.ComOpen(port)  # Check your computer's bluetooth settings to get the correct port for this value.
+fa = FA.Create()
+fa.ComOpen(3)  # Check your computer's bluetooth settings to get the correct port for this value.
 
 
 angle = 0  # Starting angle always defined as "0" degrees.
-#turn = []  # a placeholder for turn commands.
-#movement_list = [] # List of movement commands before parsing for forward movement lengths. 
+turn = []  # a placeholder for turn commands.
 final_movement_list = []  # The final list of movement commands the robot executes, a list of strings.
 
 
@@ -30,92 +29,108 @@ def turns(reversed_list):
     global turn
     global angle
     global final_movement_list
-    final_movement_list = []
-    print(reversed_list)
+
     
-    y = 0
-    final_movement_list.append(0)
-    for node in range(len(reversed_list)-1):    
-        m = 0
-        if reversed_list[node][0] < reversed_list[node + 1][0]: m += 1 # x increase
-        if reversed_list[node][1] > reversed_list[node + 1][1]: m += 2 # y decrease
-        if reversed_list[node][1] < reversed_list[node + 1][1]: m += 3 # y increase
-        
-        if angle == 90: m += 10
-        if angle == 180: m += 20
-        if angle == 270: m += 30
-        
-        print(node, " m: ", m)
-        """Caselist, m values outside of this list are errors
-        2: angle 0, y value decreases, turn left
-        3: angle 0, y value increases, turn right
-        10: angle 90, x value decreases, turn left
-        11: angle 90, x value increases, turn right
-        22: angle 180, y value decreases, turn right
-        23: angle 180, y value increases, turn left
-        30: angle 270, x value decreases, turn right
-        31: angle 270, x value increases, turn left
-        """
-        match m:
-            case 1:
-                final_movement_list.extend(["right", "right", 1])
-                y += 3
-            case 2 | 10 | 23 | 31:
-                final_movement_list.extend(["left", 1])
-                y += 2
-            case 3 | 11 | 22 | 30:
-                final_movement_list.extend(["right", 1])
-                y += 2
-            case _:
-                final_movement_list[y] += 1
-        
-        match m:
-            case 1:
-                angle = 180
-            case 2 | 22:
-                angle = 270
-            case 3 | 23:
-                angle = 90
-            case 10 | 30:
-                angle = 0
-            case 11 | 31:
-                angle = 180
-        
-    match angle:
-        case 90:
+    for node in range(len(reversed_list)-1):
+        if angle == 0 and reversed_list[node][1] > reversed_list[node + 1][1]:  # angle 0, y value decreases, turn left
+            angle = 270
+            turn.append(angle)
             final_movement_list.append("left")
-            angle = 0
-        case 180:
-            final_movement_list.extend(["right", "right"])
-            angle = 0
-        case 270:
+            final_movement_list.append("forward")
+            continue
+        if angle == 0 and reversed_list[node][1] < reversed_list[node + 1][1]:  # angle 0, y value increases, turn right
+            angle = 90
+            turn.append(angle)
             final_movement_list.append("right")
+            final_movement_list.append("forward")
+            continue
+        if angle == 180 and reversed_list[node][1] > reversed_list[node + 1][1]:  # angle 180, y value decreases, turn left
+            angle = 90
+            turn.append(angle)
+            final_movement_list.append("left")
+            final_movement_list.append("forward")
+            continue
+        if angle == 180 and reversed_list[node][1] < reversed_list[node + 1][1]:  # angle 180, y value increases, turn left
+            angle = 90
+            turn.append(angle)
+            final_movement_list.append("left")
+            final_movement_list.append("forward")
+            continue
+        if angle == 90 and reversed_list[node][0] > reversed_list[node + 1][0]:  # angle 90, x value decreases, turn left
             angle = 0
-    
-    print("FINAL ANGLE: " + str(angle))
+            turn.append(angle)
+            final_movement_list.append("left")
+            final_movement_list.append("forward")
+            continue
+        if angle == 90 and reversed_list[node][0] < reversed_list[node + 1][0]:  # angle 90, x value increases, turn right
+            angle = 180
+            turn.append(angle)
+            final_movement_list.append("right")
+            final_movement_list.append("forward")
+            continue
+        if angle == 270 and reversed_list[node][0] > reversed_list[node + 1][0]:  # angle 270, x value decreases, turn right
+            angle = 0
+            turn.append(angle)
+            final_movement_list.append("right")
+            final_movement_list.append("forward")
+            continue
+        if angle == 270 and reversed_list[node][0] < reversed_list[node + 1][0]:  # angle 270, x value increases, turn left
+            angle = 180
+            turn.append(angle)
+            final_movement_list.append("left")
+            final_movement_list.append("forward")
+            continue
+        else:
+            # turn.append("forward")
+            final_movement_list.append("forward")
+    """
+    for node in range(len(reversed_list) - 1):
+        x_diff = reversed_list[node][0] - reversed_list[node + 1][0]
+        y_diff = reversed_list[node][1] - reversed_list[node + 1][1]
+
+        if angle == 0 and y_diff > 0:
+            angle = 270
+        elif angle == 0 and y_diff < 0:
+            angle = 90
+        elif angle == 180 and y_diff > 0:
+            angle = 90
+        elif angle == 180 and y_diff < 0:
+            angle = 90
+        elif angle == 90 and x_diff > 0:
+            angle = 0
+        elif angle == 90 and x_diff < 0:
+            angle = 180
+        elif angle == 270 and x_diff > 0:
+            angle = 0
+        elif angle == 270 and x_diff < 0:
+            angle = 180
+        else:
+            final_movement_list.append("forward")
+            continue
+    """
+    turn.append(angle)
+    final_movement_list.extend(["left", "forward"])
+    print("Final angle: " + str(angle))
     print("MOVEMENT SOLUTION: " + str(final_movement_list))
 
-def navigate(angle, dist):
-    #print(type(angle), angle, type(dist), dist)
+
+def navigate():
     for x in range(len(final_movement_list)):
-        print("Doing...")
-        match final_movement_list[x]:
-            case "left":
-                fa.Left(angle)
-            case "right":
-                fa.Right(angle)
-            case _:
-                fa.Forwards(dist * final_movement_list[x])
-    
+        if final_movement_list[x] == "forward":
+            fa.Forwards(87.5)
+            time.sleep(0.0)
+        if final_movement_list[x] == "left":
+            fa.Left(86)
+            time.sleep(0.0)
+        if final_movement_list[x] == "right":
+            fa.Right(86)
+            time.sleep(0.0)
     fa.SetMotors(0, 0)
     fa.ComClose()
-    print("Finished")
 
 
 def a_star(maze, start, end):
     """Returns a list of tuples as a path from the given start to the given end in the given maze"""
-
-    print(maze, start, end)
 
     # Create start and end node
     start_node = Node(None, start)
@@ -180,7 +195,7 @@ def a_star(maze, start, end):
 
             # Create new node
             new_node = Node(current_node, node_position)
-            #print(current_node.position)
+            print(current_node.position)
 
             # Append
             children.append(new_node)
@@ -207,7 +222,7 @@ def a_star(maze, start, end):
             # Add the child to the open list
             open_list.append(child)
 
-"""
+
 def main():
 
     maze = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -232,4 +247,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
