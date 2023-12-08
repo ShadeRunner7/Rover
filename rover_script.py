@@ -46,7 +46,8 @@ def turns(reversed_list):
         if angle == 270: m += 30
         
         print(node, " m: ", m)
-        """Caselist, m values outside of this list are errors
+        """Caselist, m values outside of this list are errors or oversights
+        1: angle 0, x value increases, turn right twice
         2: angle 0, y value decreases, turn left
         3: angle 0, y value increases, turn right
         10: angle 90, x value decreases, turn left
