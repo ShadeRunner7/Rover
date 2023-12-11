@@ -69,8 +69,17 @@ class GUI:
         ROW += 1
         
         self.Port_Number = ttk.Spinbox(frame, from_=0, to=10, width=2)
-        self.Port_Number.set(3) #Port default value
+        self.Port_Number.set(3)  #Port default value
         self.Port_Number.grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
+        
+        ttk.Button(frame, text="Test port", command=(lambda: self.Port_Test())).grid(column=0, row=ROW, columnspan=2)
+        ROW += 1
+        
+        ttk.Label(frame, text="Connection: ").grid(column=0, row=ROW, sticky="e")
+        
+        self.Port_Test_Label = ttk.Label(frame)
+        self.Port_Test_Label.grid(column=1, row=ROW, sticky="w")
         ROW += 1
         
         ttk.Label(frame).grid(column=0, row=ROW)
@@ -167,6 +176,13 @@ class GUI:
         dist = self.Dist.get()
         SQL().save_maze(maze, angle, dist)
         self.root.destroy()
+    
+    def Port_Test(self):
+        try:
+            open_comms(self.Port_Number.get())
+            self.Port_Test_Label.config(text="OK")
+        except:            
+            self.Port_Test_Label.config(text="Failed")
 
     def run(self):
         start = ()
