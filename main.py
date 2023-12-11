@@ -73,7 +73,7 @@ class GUI:
         self.Port_Number.grid(column=0, row=ROW, columnspan=2)
         ROW += 1
         
-        ttk.Button(frame, text="Test port", command=(lambda: self.Port_Test())).grid(column=0, row=ROW, columnspan=2)
+        ttk.Button(frame, text="Test port", command=lambda: self.Port_Test()).grid(column=0, row=ROW, columnspan=2)
         ROW += 1
         
         ttk.Label(frame, text="Connection: ").grid(column=0, row=ROW, sticky="e")
