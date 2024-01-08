@@ -23,14 +23,16 @@ class GUI:
         #print(self.start_and_goal)
         
         self.null_img = PhotoImage(width=0, height=0)
+        self.goal_img = PhotoImage(file='lippu.png')
+        self.star_img = PhotoImage(file='start.png')
         s.configure('grid.TLabel', 
             #compound='c',
             image=self.null_img,
             padding=25)
         s.configure('grid.TLabel', background='white')
         s.configure('wall.grid.TLabel', background='red')
-        s.configure('start.grid.TLabel', background='green')
-        s.configure('goal.grid.TLabel', background='blue')
+        s.configure('start.grid.TLabel', image=self.star_img, padding=0)
+        s.configure('goal.grid.TLabel', image=self.goal_img, padding=0)
         
         self.MAP_WIDTH = MAP_WIDTH = 11     
         

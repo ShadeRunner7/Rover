@@ -47,15 +47,15 @@ def turns(reversed_list):
         
         print(node, " m: ", m)
         """Caselist, m values outside of this list are errors or oversights
-        1: angle 0, x value increases, turn right twice
-        2: angle 0, y value decreases, turn left
-        3: angle 0, y value increases, turn right
-        10: angle 90, x value decreases, turn left
-        11: angle 90, x value increases, turn right
-        22: angle 180, y value decreases, turn right
-        23: angle 180, y value increases, turn left
-        30: angle 270, x value decreases, turn right
-        31: angle 270, x value increases, turn left
+            1: angle 0, x value increases, turn right twice
+            2: angle 0, y value decreases, turn left
+            3: angle 0, y value increases, turn right
+            10: angle 90, x value decreases, turn left
+            11: angle 90, x value increases, turn right
+            22: angle 180, y value decreases, turn right
+            23: angle 180, y value increases, turn left
+            30: angle 270, x value decreases, turn right
+            31: angle 270, x value increases, turn left
         """
         match m:
             case 1:
