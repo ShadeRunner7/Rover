@@ -102,7 +102,7 @@ def navigate(angle, dist):
         print("Doing...")
         match final_movement_list[x]:
             case "left":
-                fa.Left(angle)
+                fa.Left(angle - 0.3)
             case "right":
                 fa.Right(angle)
             case _:
